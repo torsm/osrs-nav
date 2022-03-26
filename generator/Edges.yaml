@@ -1,0 +1,82 @@
+#
+# Collection of custom edges used by osrs-nav/generator
+# Refer to CustomEdge in osrs-nav/model/src/lib.rs
+#
+
+---
+# Ardougne log balance (west)
+edges:
+  - source: { x: 2598, y: 3336, plane: 0 }
+    destination: { x: 2602, y: 3336, plane: 0 }
+    cost: 4
+    definition:
+      type: GameObject
+      id: 16546
+      position: { x: 2599, y: 3336, plane: 0 }
+      action: Walk-across
+    requirements:
+      - Skill: { skill: agility, level: 33 }
+      - Membership
+
+  # Ardougne log balance (east)
+  - source: { x: 2602, y: 3336, plane: 0 }
+    destination: { x: 2598, y: 3336, plane: 0 }
+    cost: 4
+    definition:
+      type: GameObject
+      id: 16548
+      position: { x: 2601, y: 3336, plane: 0 }
+      action: Walk-across
+    requirements:
+      - Skill: { skill: agility, level: 33 }
+      - Membership
+
+  # Taverly dungeon entrance (Taverly)
+  - source: { x: 2885, y: 3397, plane: 0 }
+    destination: { x: 2885, y: 9797, plane: 0 }
+    definition:
+      type: GameObject
+      id: 16680
+      position: { x: 2884, y: 3397, plane: 0 }
+      action: Climb-down
+
+  # Taverly dungeon exit (Taverly)
+  - source: { x: 2885, y: 9797, plane: 0 }
+    destination: { x: 2885, y: 3397, plane: 0 }
+    definition:
+      type: GameObject
+      id: 17385
+      position: { x: 3884, y: 9797, plane: 0 }
+      action: Climb-up
+
+teleports:
+  # Varrock teleport spell
+  - destination: { x: 3212, y: 3424, plane: 0 }
+    cost: 50
+    definition:
+      type: SpellTeleport
+      spell: Varrock Teleport
+    requirements:
+      - Item: { item: Air rune, quantity: 3 }
+      - Item: { item: Fire rune, quantity: 1 }
+      - Item: { item: Law rune, quantity: 1 }
+
+  # Varrock teleport tablet
+  - destination: { x: 3212, y: 3424, plane: 0 }
+    cost: 50
+    definition:
+      type: ItemTeleport
+      item: Varrock teleport
+      action: Break
+    requirements:
+      - Item: { item: Varrock teleport, quantity: 1 }
+
+  # Ring of dueling -> Castle wars
+  - destination: { x: 2441, y: 3087, plane: 0 }
+    cost: 30
+    definition:
+      type: ItemTeleport
+      item: Ring of dueling\(\d\)
+      action: Castle Wars
+    requirements:
+      - Item: { item: Ring of dueling\(\d\), quantity: 1 }

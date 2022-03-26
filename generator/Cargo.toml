@@ -1,0 +1,14 @@
+[package]
+name = "generator"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+model = { path = "../model" }
+pathfinder = { path = "../pathfinder" }
+rs3cache = { git = "https://github.com/Torsm/rs3cache", rev = "dcc3557", features = ["osrs"] }
+serde = { version = "1.0.136", features = ["derive"] }
+serde_yaml = "0.8.23"
+ciborium = "0.2.0"
+expect-exit = "0.4.1"
+clap = { version = "3.1.6", features = ["derive"] }

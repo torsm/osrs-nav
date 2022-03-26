@@ -1,0 +1,11 @@
+[package]
+name = "model"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+multimap = "0.8.3"
+serde = { version = "1.0.136", features = ["derive"] }
+num-traits = "0.2.14"
+regex = "1.5.5"
+serde_regex = "1.1.0"
