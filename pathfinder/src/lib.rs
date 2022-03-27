@@ -1,4 +1,4 @@
-use std::collections::{BinaryHeap, VecDeque};
+use std::collections::VecDeque;
 
 use serde::{Deserialize, Serialize};
 
@@ -20,31 +20,55 @@ struct DijkstraCacheState<'a> {
     edge: Option<&'a Edge>
 }
 
-#[derive(Eq, PartialEq, Clone, Copy, Debug)]
-struct DijkstraQueueState {
-    cost: u32,
-    index: u32,
+pub struct BucketRingBuffer<T> {
+    buckets: Vec<Vec<T>>,
+    cursor: usize,
 }
 
-impl Ord for DijkstraQueueState {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        other.cost.cmp(&self.cost).then_with(|| self.index.cmp(&other.index))
+impl<T: Clone> BucketRingBuffer<T> {
+    pub fn new(max_cost: u32) -> BucketRingBuffer<T> {
+        BucketRingBuffer {
+            buckets: vec![Vec::new(); max_cost as usize + 1],
+            cursor: 0
+        }
     }
-}
 
-impl PartialOrd for DijkstraQueueState {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
+    pub fn reset(&mut self) {
+        self.cursor = 0;
+        for x in &mut self.buckets {
+            x.clear();
+        }
     }
-}
 
-macro_rules! dijkstra_queue_state {
-  ($cost:expr, $index:expr) => {
-    !((($cost as u64) << 32) | $index as u64)
-  };
-  ($state:expr) => {
-    (((!$state) >> 32) as u32, (!$state) as u32)
-  };
+    fn increment(&mut self) {
+        self.cursor += 1;
+        if self.cursor == self.buckets.len() {
+            self.cursor = 0;
+        }
+    }
+
+    fn next_bin(&mut self) -> Option<usize> {
+        let len = self.buckets.len();
+        for i in 0..len {
+            let mut index = self.cursor + i;
+            if index >= len {
+                index -= len;
+            }
+            if !self.buckets[index].is_empty() {
+                return Some(index);
+            }
+        }
+        None
+    }
+
+    fn push(&mut self, cost: u32, state: T) {
+        let len = self.buckets.len();
+        let mut index = cost as usize + self.cursor;
+        if index >= len {
+            index -= len;
+        }
+        self.buckets[index].push(state);
+    }
 }
 
 pub fn dijkstra(nav_grid: &NavGrid, start: &Coordinate, end: &Coordinate, game_state: &GameState) -> Option<Vec<Step>> {
@@ -53,10 +77,11 @@ pub fn dijkstra(nav_grid: &NavGrid, start: &Coordinate, end: &Coordinate, game_s
     if nav_grid.vertices[start_index as usize].get_group() != nav_grid.vertices[end_index as usize].get_group() {
         return None;
     }
-    let mut queue = BinaryHeap::with_capacity(128);
+    let max_cost = nav_grid.edges.iter().map(|(_, v)| v).chain(nav_grid.teleports.iter()).map(|edge| edge.cost).max().unwrap();
+    let mut queue = BucketRingBuffer::new(max_cost); //TODO borrow from pool instead
     let mut cache = RegionCache::new(DijkstraCacheState { cost: u32::MAX, prev: u32::MAX, edge: None });
     cache.get_mut(start_index).cost = 0;
-    queue.push(dijkstra_queue_state!(0, start_index));
+    queue.push(0, (0, start_index));
     for teleport in &nav_grid.teleports {
         if teleport.requirements.iter().all(|req| req.is_met(game_state)) {
             let dest = cache.get_mut(teleport.destination.index());
@@ -64,53 +89,57 @@ pub fn dijkstra(nav_grid: &NavGrid, start: &Coordinate, end: &Coordinate, game_s
                 dest.cost = teleport.cost;
                 dest.prev = start_index;
                 dest.edge = Some(teleport);
-                queue.push(dijkstra_queue_state!(dest.cost, teleport.destination.index()));
+                queue.push(teleport.cost, (dest.cost, teleport.destination.index()));
             }
         }
     }
-    while let Some(queue_state) = queue.pop() {
-        let (cost, mut index) = dijkstra_queue_state!(queue_state);
-        if index == end_index {
-            let mut path = Vec::new();
-            while index != start_index {
-                let state = cache.get_mut(index);
-                if let Some(edge) = state.edge {
-                    path.push(Step::Edge(edge.definition.clone()));
-                } else {
-                    path.push(Step::Step(Coordinate::from_index(index)));
+
+    while let Some(current) = queue.next_bin() {
+        while let Some((cost, mut index)) = queue.buckets[current].pop() {
+            if index == end_index {
+                let mut path = Vec::new();
+                while index != start_index {
+                    let state = cache.get_mut(index);
+                    if let Some(edge) = state.edge {
+                        path.push(Step::Edge(edge.definition.clone()));
+                    } else {
+                        path.push(Step::Step(Coordinate::from_index(index)));
+                    }
+                    index = state.prev;
                 }
-                index = state.prev;
+                path.reverse();
+                return Some(path);
             }
-            path.reverse();
-            return Some(path);
-        }
-        let v = &nav_grid.vertices[index as usize];
-        for (flag, dx, dy) in &DIRECTIONS {
-            if (v.flags & flag) != 0 {
-                let adj_index = index + (WIDTH * *dy as u32) + *dx as u32;
-                let adj = cache.get_mut(adj_index);
-                if cost + 1 < adj.cost {
-                    adj.cost = cost + 1;
-                    adj.prev = index;
-                    adj.edge = None;
-                    queue.push(dijkstra_queue_state!(adj.cost, adj_index));
-                }
-            }
-        }
-        if v.has_extra_edges() {
-            for edge in nav_grid.edges.get_vec(&index).unwrap() {
-                if edge.requirements.iter().all(|req| req.is_met(game_state)) {
-                    let adj = cache.get_mut(edge.destination.index());
-                    if cost + edge.cost < adj.cost {
-                        adj.cost = cost + edge.cost;
+            let v = &nav_grid.vertices[index as usize];
+            for (flag, dx, dy) in &DIRECTIONS {
+                if (v.flags & flag) != 0 {
+                    let adj_index = index + (WIDTH * *dy as u32) + *dx as u32;
+                    let adj = cache.get_mut(adj_index);
+                    if cost + 1 < adj.cost {
+                        adj.cost = cost + 1;
                         adj.prev = index;
-                        adj.edge = Some(edge);
-                        queue.push(dijkstra_queue_state!(adj.cost, edge.destination.index()));
+                        adj.edge = None;
+                        queue.push(1, (adj.cost, adj_index));
+                    }
+                }
+            }
+            if v.has_extra_edges() {
+                for edge in nav_grid.edges.get_vec(&index).unwrap() {
+                    if edge.requirements.iter().all(|req| req.is_met(game_state)) {
+                        let adj = cache.get_mut(edge.destination.index());
+                        if cost + edge.cost < adj.cost {
+                            adj.cost = cost + edge.cost;
+                            adj.prev = index;
+                            adj.edge = Some(edge);
+                            queue.push(edge.cost, (adj.cost, edge.destination.index()));
+                        }
                     }
                 }
             }
         }
+        queue.increment();
     }
+
     None
 }
 
