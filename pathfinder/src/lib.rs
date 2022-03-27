@@ -7,6 +7,12 @@ use model::constants::*;
 use model::definitions::{EdgeDefinition, GameState};
 use model::util::RegionCache;
 
+#[derive(Debug, Deserialize, Serialize)]
+pub enum Step {
+    Edge(EdgeDefinition),
+    Step(Coordinate),
+}
+
 #[derive(Clone, Copy)]
 struct DijkstraCacheState<'a> {
     cost: u32,
@@ -18,12 +24,6 @@ struct DijkstraCacheState<'a> {
 struct DijkstraQueueState {
     cost: u32,
     index: u32,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub enum Step {
-    Edge(EdgeDefinition),
-    Step(Coordinate),
 }
 
 impl Ord for DijkstraQueueState {
@@ -38,32 +38,41 @@ impl PartialOrd for DijkstraQueueState {
     }
 }
 
+macro_rules! dijkstra_queue_state {
+  ($cost:expr, $index:expr) => {
+    !((($cost as u64) << 32) | $index as u64)
+  };
+  ($state:expr) => {
+    (((!$state) >> 32) as u32, (!$state) as u32)
+  };
+}
+
 pub fn dijkstra(nav_grid: &NavGrid, start: &Coordinate, end: &Coordinate, game_state: &GameState) -> Option<Vec<Step>> {
     let start_index = start.index();
     let end_index = end.index();
     if nav_grid.vertices[start_index as usize].get_group() != nav_grid.vertices[end_index as usize].get_group() {
         return None;
     }
-    let mut queue = BinaryHeap::new();
+    let mut queue = BinaryHeap::with_capacity(128);
     let mut cache = RegionCache::new(DijkstraCacheState { cost: u32::MAX, prev: u32::MAX, edge: None });
     cache.get_mut(start_index).cost = 0;
-    queue.push(DijkstraQueueState { cost: 0, index: start_index});
+    queue.push(dijkstra_queue_state!(0, start_index));
     for teleport in &nav_grid.teleports {
         if teleport.requirements.iter().all(|req| req.is_met(game_state)) {
             let dest = cache.get_mut(teleport.destination.index());
             if teleport.cost < dest.cost {
-                println!("{:?}", teleport);
                 dest.cost = teleport.cost;
-                //dest.prev = start_index;
+                dest.prev = start_index;
                 dest.edge = Some(teleport);
-                queue.push(DijkstraQueueState { cost: dest.cost, index: teleport.destination.index() });
+                queue.push(dijkstra_queue_state!(dest.cost, teleport.destination.index()));
             }
         }
     }
-    while let Some(DijkstraQueueState { cost, mut index }) = queue.pop() {
+    while let Some(queue_state) = queue.pop() {
+        let (cost, mut index) = dijkstra_queue_state!(queue_state);
         if index == end_index {
             let mut path = Vec::new();
-            while index != u32::MAX {
+            while index != start_index {
                 let state = cache.get_mut(index);
                 if let Some(edge) = state.edge {
                     path.push(Step::Edge(edge.definition.clone()));
@@ -84,7 +93,7 @@ pub fn dijkstra(nav_grid: &NavGrid, start: &Coordinate, end: &Coordinate, game_s
                     adj.cost = cost + 1;
                     adj.prev = index;
                     adj.edge = None;
-                    queue.push(DijkstraQueueState { cost: adj.cost, index: adj_index });
+                    queue.push(dijkstra_queue_state!(adj.cost, adj_index));
                 }
             }
         }
@@ -96,7 +105,7 @@ pub fn dijkstra(nav_grid: &NavGrid, start: &Coordinate, end: &Coordinate, game_s
                         adj.cost = cost + edge.cost;
                         adj.prev = index;
                         adj.edge = Some(edge);
-                        queue.push(DijkstraQueueState { cost: adj.cost, index: edge.destination.index() });
+                        queue.push(dijkstra_queue_state!(adj.cost, edge.destination.index()));
                     }
                 }
             }
