@@ -16,12 +16,12 @@ pub const FLAG_SW: u8 = 0x40;
 pub const FLAG_NW: u8 = 0x80;
 
 pub const DIRECTIONS: [(u8, i32, i32); 8] = [
-    (FLAG_W, -1, 0),
-    (FLAG_E, 1, 0),
-    (FLAG_NW, -1, 1),
     (FLAG_N, 0, 1),
-    (FLAG_NE, 1, 1),
-    (FLAG_SW, -1, -1),
+    (FLAG_E, 1, 0),
     (FLAG_S, 0, -1),
-    (FLAG_SE, 1, -1)
+    (FLAG_W, -1, 0),
+    (FLAG_NE, 1, 1),
+    (FLAG_SE, 1, -1),
+    (FLAG_SW, -1, -1),
+    (FLAG_NW, -1, 1),
 ];
