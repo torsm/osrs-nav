@@ -1,6 +1,7 @@
+use std::fmt::{Display, Formatter};
 pub use multimap::MultiMap;
 use num_traits::One;
-pub use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use crate::constants::*;
 use crate::definitions::{EdgeDefinition, RequirementDefinition};
@@ -115,5 +116,11 @@ impl Coordinate {
         self.x = (self.x as i16 + dx) as u16;
         self.y = (self.y as i16 + dy) as u16;
         self.plane = (self.plane as i8 + dplane) as u8;
+    }
+}
+
+impl Display for Coordinate {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {}, {})", self.x, self.y, self.plane)
     }
 }
