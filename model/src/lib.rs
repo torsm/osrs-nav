@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+
 pub use multimap::MultiMap;
 use num_traits::One;
 use serde::{Deserialize, Serialize};
