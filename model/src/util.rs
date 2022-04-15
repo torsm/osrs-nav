@@ -44,4 +44,10 @@ impl<T: Copy> RegionCache<T> {
         let region = self.regions[region_index as usize].as_ref()?;
         Some(&region[((y % REGION_SIZE) * REGION_SIZE + x % REGION_SIZE) as usize])
     }
+
+    pub fn mem_usage(&self) -> usize {
+        self.regions.iter().map(|v| {
+            std::mem::size_of_val(v) + if v.is_some() { std::mem::size_of::<Region<T>>() } else { 0 }
+        }).sum()
+    }
 }
