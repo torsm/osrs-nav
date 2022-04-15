@@ -8,6 +8,6 @@ model = { path = "../model" }
 pathfinder = { path = "../pathfinder" }
 serde = { version = "1.0.136", features = ["derive"] }
 ciborium = "0.2.0"
-serde_json = "1.0.79"
 expect-exit = "0.4.1"
 clap = { version = "3.1.6", features = ["derive"] }
+rocket = { version = "0.5.0-rc.1", features = ["json"] }

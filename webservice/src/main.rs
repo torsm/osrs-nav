@@ -1,11 +1,20 @@
+#[macro_use] extern crate rocket;
+
 use std::fs::File;
 use std::io::{BufReader, Read};
 use std::path::{Path, PathBuf};
+use std::time::Instant;
 
 use clap::Parser;
 use expect_exit::ExpectedWithError;
+use rocket::{Build, Rocket, State};
+use rocket::response::status::BadRequest;
+use rocket::serde::json::Json;
+use serde::{Deserialize, Serialize};
 
-use model::NavGrid;
+use model::{Coordinate, NavGrid};
+use model::definitions::GameState;
+use pathfinder::Step;
 
 #[derive(Parser)]
 struct Options {
@@ -14,11 +23,39 @@ struct Options {
     navgrid: PathBuf,
 }
 
-fn main() {
+#[derive(Debug, Deserialize)]
+struct Request {
+    start: Coordinate,
+    end: Coordinate,
+    game_state: GameState,
+}
+
+#[derive(Debug, Serialize)]
+struct Response {
+    path: Option<Vec<Step>>,
+
+}
+
+#[post("/", data = "<request>")]
+fn handle_path_request(request: Json<Request>, nav_grid: &State<NavGrid>) -> Result<Json<Option<Vec<Step>>>, BadRequest<&str>> {
+    if !request.start.validate() || !request.end.validate() {
+        Err(BadRequest(Some("Coordinate out of bounds")))
+    } else {
+        let begin = Instant::now();
+        let (visited, mem_usage, path) = pathfinder::dijkstra(&nav_grid, &request.start, &request.end, &request.game_state);
+        let duration = Instant::now() - begin;
+        println!("[Path] {} -> {} in {:.2}ms, {}Kb, {} visited", request.start, request.end, duration.as_secs_f64() * 1000f64, mem_usage / 1024, visited);
+        Ok(Json(path))
+    }
+}
+
+#[launch]
+fn rocket() -> Rocket<Build> {
     let options = Options::parse();
     let nav_grid = load_nav_grid(&options.navgrid).or_exit_e_("Error loading NavGrid");
-
-    //TODO stuff
+    rocket::build()
+        .mount("/path", routes![handle_path_request])
+        .manage(nav_grid)
 }
 
 fn load_nav_grid(path: impl AsRef<Path>) -> Result<NavGrid, ciborium::de::Error<std::io::Error>> {

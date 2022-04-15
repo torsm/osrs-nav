@@ -35,9 +35,7 @@ impl<T: Clone> BucketRingBuffer<T> {
 
     pub fn reset(&mut self) {
         self.cursor = 0;
-        for x in &mut self.buckets {
-            x.clear();
-        }
+        self.buckets.iter_mut().for_each(Vec::clear);
     }
 
     fn increment(&mut self) {
@@ -71,31 +69,36 @@ impl<T: Clone> BucketRingBuffer<T> {
     }
 }
 
-pub fn dijkstra(nav_grid: &NavGrid, start: &Coordinate, end: &Coordinate, game_state: &GameState) -> Option<Vec<Step>> {
+pub fn dijkstra(nav_grid: &NavGrid, start: &Coordinate, end: &Coordinate, game_state: &GameState) -> (usize, usize, Option<Vec<Step>>) {
     let start_index = start.index();
     let end_index = end.index();
-    if nav_grid.vertices[start_index as usize].get_group() != nav_grid.vertices[end_index as usize].get_group() {
-        return None;
-    }
+    let target_group = nav_grid.vertices[end_index as usize].get_group();
     let max_cost = nav_grid.edges.iter().map(|(_, v)| v).chain(nav_grid.teleports.iter()).map(|edge| edge.cost).max().unwrap();
-    let mut queue = BucketRingBuffer::new(max_cost); //TODO borrow from pool instead
+    let mut queue = BucketRingBuffer::new(max_cost); //TODO borrow from pool instead to prevent allocations?
     let mut cache = RegionCache::new(DijkstraCacheState { cost: u32::MAX, prev: u32::MAX, edge: None });
-    cache.get_mut(start_index).cost = 0;
-    queue.push(0, (0, start_index));
+    let mut count = 0;
+    if nav_grid.vertices[start_index as usize].get_group() == target_group {
+        cache.get_mut(start_index).cost = 0;
+        queue.push(0, (0, start_index));
+    }
     for teleport in &nav_grid.teleports {
         if teleport.requirements.iter().all(|req| req.is_met(game_state)) {
-            let dest = cache.get_mut(teleport.destination.index());
-            if teleport.cost < dest.cost {
-                dest.cost = teleport.cost;
-                dest.prev = start_index;
-                dest.edge = Some(teleport);
-                queue.push(teleport.cost, (dest.cost, teleport.destination.index()));
+            let index = teleport.destination.index();
+            if nav_grid.vertices[index as usize].get_group() == target_group {
+                let dest = cache.get_mut(index);
+                if teleport.cost < dest.cost {
+                    dest.cost = teleport.cost;
+                    dest.prev = start_index;
+                    dest.edge = Some(teleport);
+                    queue.push(teleport.cost, (dest.cost, index));
+                }
             }
         }
     }
 
     while let Some(current) = queue.next_bin() {
         while let Some((cost, mut index)) = queue.buckets[current].pop() {
+            count += 1;
             if index == end_index {
                 let mut path = Vec::new();
                 while index != start_index {
@@ -108,7 +111,7 @@ pub fn dijkstra(nav_grid: &NavGrid, start: &Coordinate, end: &Coordinate, game_s
                     index = state.prev;
                 }
                 path.reverse();
-                return Some(path);
+                return (count, cache.mem_usage(), Some(path));
             }
             let v = &nav_grid.vertices[index as usize];
             for (flag, dx, dy) in &DIRECTIONS {
@@ -140,7 +143,7 @@ pub fn dijkstra(nav_grid: &NavGrid, start: &Coordinate, end: &Coordinate, game_s
         queue.increment();
     }
 
-    None
+    (count, cache.mem_usage(), None)
 }
 
 pub fn flood<F>(nav_grid: &NavGrid, start: &Coordinate, mut visit_vertex: F) where F: FnMut(u32) -> bool {
