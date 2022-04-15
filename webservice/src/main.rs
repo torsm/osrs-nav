@@ -10,7 +10,7 @@ use expect_exit::ExpectedWithError;
 use rocket::{Build, Rocket, State};
 use rocket::response::status::BadRequest;
 use rocket::serde::json::Json;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use model::{Coordinate, NavGrid};
 use model::definitions::GameState;
@@ -23,17 +23,11 @@ struct Options {
     navgrid: PathBuf,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 struct Request {
     start: Coordinate,
     end: Coordinate,
     game_state: GameState,
-}
-
-#[derive(Debug, Serialize)]
-struct Response {
-    path: Option<Vec<Step>>,
-
 }
 
 #[post("/", data = "<request>")]
