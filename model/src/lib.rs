@@ -25,6 +25,10 @@ impl NavGrid {
             teleports: Vec::new()
         }
     }
+
+    pub fn iter_edges(&self) -> impl Iterator<Item = &Edge> {
+        self.edges.iter_all().flat_map(|(_, v)| v).chain(self.teleports.iter())
+    }
 }
 
 #[derive(Default, Eq, PartialEq, Clone, Copy, Debug)]

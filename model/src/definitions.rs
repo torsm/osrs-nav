@@ -7,9 +7,16 @@ use crate::Coordinate;
 
 #[derive(Deserialize)]
 pub struct GameState {
+    #[serde(default)]
     pub member: bool,
+    #[serde(default)]
     pub skill_levels: HashMap<String, u8>,
+    #[serde(default)]
     pub items: HashMap<String, u32>,
+    #[serde(default)]
+    pub varps: HashMap<u32, i32>,
+    #[serde(default)]
+    pub varbits: HashMap<u32, i32>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -22,10 +29,30 @@ pub enum EdgeDefinition {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum Compare {
+    LT, LE, EQ, GE, GT, NOT
+}
+
+impl Compare {
+    pub fn test<T: Ord>(&self, a: T, b: T) -> bool {
+        match self {
+            Compare::LT => a < b,
+            Compare::LE => a <= b,
+            Compare::EQ => a == b,
+            Compare::GE => a >= b,
+            Compare::GT => a > b,
+            Compare::NOT => a != b,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum RequirementDefinition {
     Membership,
     Skill { skill: String, level: u8 },
     Item { #[serde(with = "serde_regex")] item: Regex, quantity: u32 },
+    Varp { index: u32, value: i32, compare: Compare },
+    Varbit { index: u32, value: i32, compare: Compare },
 }
 
 impl RequirementDefinition {
@@ -40,6 +67,8 @@ impl RequirementDefinition {
                     .sum();
                 total >= *quantity
             },
+            RequirementDefinition::Varp { index, value, compare } => game_state.varps.get(index).map(|val| compare.test(value, val)).unwrap_or(false),
+            RequirementDefinition::Varbit { index, value, compare } => game_state.varbits.get(index).map(|val| compare.test(value, val)).unwrap_or(false),
         }
     }
 }

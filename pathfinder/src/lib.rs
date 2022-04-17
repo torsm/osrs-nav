@@ -73,7 +73,7 @@ pub fn dijkstra(nav_grid: &NavGrid, start: &Coordinate, end: &Coordinate, game_s
     let start_index = start.index();
     let end_index = end.index();
     let target_group = nav_grid.vertices[end_index as usize].get_group();
-    let max_cost = nav_grid.edges.iter().map(|(_, v)| v).chain(nav_grid.teleports.iter()).map(|edge| edge.cost).max().unwrap();
+    let max_cost = nav_grid.iter_edges().map(|edge| edge.cost).max().unwrap();
     let mut queue = BucketRingBuffer::new(max_cost); //TODO borrow from pool instead to prevent allocations?
     let mut cache = RegionCache::new(DijkstraCacheState { cost: u32::MAX, prev: u32::MAX, edge: None });
     let mut count = 0;

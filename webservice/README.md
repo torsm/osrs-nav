@@ -2,10 +2,11 @@
 Web API serving pathfinding requests
 
 ### Web API
-| Route     | Method | Description                |
-|-----------|--------|----------------------------|
-| /path/    | POST   | Path generation request    |
-| /metrics/ | GET    | Exposes prometheus metrics |
+| Route     | Method | Description                                                                       |
+|-----------|--------|-----------------------------------------------------------------------------------|
+| /path/    | POST   | Path generation request                                                           |
+| /varps/   | GET    | Returns the sets of varp/varbit indices whose values are relevant for pathfinding |
+| /metrics/ | GET    | Exposes prometheus metrics                                                        |
 
 #### POST /path/
 Example body [(2771, 2794, 0)](https://explv.github.io/?centreX=2771&centreY=2794&centreZ=0&zoom=10) -> [(3213, 3427, 0)](https://explv.github.io/?centreX=3213&centreY=3427&centreZ=0&zoom=10)
@@ -16,6 +17,9 @@ Example body [(2771, 2794, 0)](https://explv.github.io/?centreX=2771&centreY=279
   "game_state": {
     "member": true,
     "skill_levels": { "magic": 25 },
+    "varps": {
+      "273": 110
+    },
     "items": {
       "Air rune": 3,
       "Fire rune": 1,

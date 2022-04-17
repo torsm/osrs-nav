@@ -49,6 +49,32 @@ edges:
       position: { x: 3884, y: 9797, plane: 0 }
       action: Climb-up
 
+  # Al-Kharid gate (After Prince Ali Rescue)
+  - source: { x: 3267, y: 3228, plane: 0 }
+    destination: { x: 3268, y: 3228, plane: 0 }
+    bidirectional: true
+    cost: 2
+    definition:
+      type: GameObject
+      id: 2883
+      position: { x: 3268, y: 3238, plane: 0 }
+      action: Pay-toll\(10gp\)
+    requirements:
+      - Varp: { index: 273, value: 110, compare: EQ }
+
+  # Al-Kharid gate (10 gp)
+  - source: { x: 3267, y: 3228, plane: 0 }
+    destination: { x: 3268, y: 3228, plane: 0 }
+    bidirectional: true
+    cost: 5
+    definition:
+      type: GameObject
+      id: 2883
+      position: { x: 3268, y: 3238, plane: 0 }
+      action: Pay-toll\(10gp\)
+    requirements:
+      - Item: { item: Coins, quantity: 10 }
+
 teleports:
   # Varrock teleport spell
   - destination: { x: 3212, y: 3424, plane: 0 }
