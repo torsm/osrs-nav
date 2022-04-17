@@ -57,6 +57,7 @@ teleports:
       type: SpellTeleport
       spell: Varrock Teleport
     requirements:
+      - Skill: { skill: magic, level: 25 }
       - Item: { item: Air rune, quantity: 3 }
       - Item: { item: Fire rune, quantity: 1 }
       - Item: { item: Law rune, quantity: 1 }
