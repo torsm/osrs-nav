@@ -10,6 +10,7 @@ use expect_exit::ExpectedWithError;
 use rocket::{Build, Rocket, State};
 use rocket::response::status::BadRequest;
 use rocket::serde::json::Json;
+use rocket_prometheus::PrometheusMetrics;
 use serde::Deserialize;
 
 use model::{Coordinate, NavGrid};
@@ -18,7 +19,7 @@ use pathfinder::Step;
 
 #[derive(Parser)]
 struct Options {
-    /// NavGrid file
+    /// Path to NavGrid file
     #[clap(short, long)]
     navgrid: PathBuf,
 }
@@ -33,6 +34,7 @@ struct Request {
 #[post("/", data = "<request>")]
 fn handle_path_request(request: Json<Request>, nav_grid: &State<NavGrid>) -> Result<Json<Option<Vec<Step>>>, BadRequest<&str>> {
     if !request.start.validate() || !request.end.validate() {
+        println!("[Path] {} -> {} invalid coordinates", request.start, request.end);
         Err(BadRequest(Some("Coordinate out of bounds")))
     } else {
         let begin = Instant::now();
@@ -47,7 +49,10 @@ fn handle_path_request(request: Json<Request>, nav_grid: &State<NavGrid>) -> Res
 fn rocket() -> Rocket<Build> {
     let options = Options::parse();
     let nav_grid = load_nav_grid(&options.navgrid).or_exit_e_("Error loading NavGrid");
+    let prometheus = PrometheusMetrics::new();
     rocket::build()
+        .attach(prometheus.clone())
+        .mount("/metrics", prometheus)
         .mount("/path", routes![handle_path_request])
         .manage(nav_grid)
 }
