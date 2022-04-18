@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::Coordinate;
 
-#[derive(Deserialize)]
+#[derive(Default, Deserialize)]
 pub struct GameState {
     #[serde(default)]
     pub member: bool,

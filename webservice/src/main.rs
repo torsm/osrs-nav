@@ -29,13 +29,16 @@ struct Options {
 struct Request {
     start: Coordinate,
     end: Coordinate,
+    #[serde(default)]
     game_state: GameState,
 }
 
 #[derive(Clone, Default, Serialize)]
-struct TrackedVarps {
+struct DataSelection {
     varps: HashSet<u32>,
     varbits: HashSet<u32>,
+    items: HashSet<String>,
+    skills: HashSet<String>,
 }
 
 #[post("/", data = "<request>")]
@@ -53,7 +56,7 @@ fn handle_path_request(request: Json<Request>, nav_grid: &State<NavGrid>) -> Res
 }
 
 #[get("/")]
-fn handle_varps_request(tracked_varps: &State<TrackedVarps>) -> Json<TrackedVarps> {
+fn handle_select_request(tracked_varps: &State<DataSelection>) -> Json<DataSelection> {
     Json(tracked_varps.inner().clone())
 }
 
@@ -61,11 +64,13 @@ fn handle_varps_request(tracked_varps: &State<TrackedVarps>) -> Json<TrackedVarp
 fn rocket() -> Rocket<Build> {
     let options = Options::parse();
     let nav_grid = load_nav_grid(&options.navgrid).or_exit_e_("Error loading NavGrid");
-    let mut tracked_varps = TrackedVarps::default();
+    let mut data_selection = DataSelection::default();
     nav_grid.iter_edges().flat_map(|e| &e.requirements).for_each(|r| {
         match r {
-            RequirementDefinition::Varp { index, .. } => tracked_varps.varps.insert(*index),
-            RequirementDefinition::Varbit { index, .. } => tracked_varps.varbits.insert(*index),
+            RequirementDefinition::Varp { index, .. } => data_selection.varps.insert(*index),
+            RequirementDefinition::Varbit { index, .. } => data_selection.varbits.insert(*index),
+            RequirementDefinition::Item { item, .. } => data_selection.items.insert(item.to_string()),
+            RequirementDefinition::Skill { skill, .. } => data_selection.skills.insert(skill.clone()),
             _ => false
         };
     });
@@ -74,9 +79,9 @@ fn rocket() -> Rocket<Build> {
         .attach(prometheus.clone())
         .mount("/metrics", prometheus)
         .mount("/path", routes![handle_path_request])
-        .mount("/varps", routes![handle_varps_request])
+        .mount("/select", routes![handle_select_request])
         .manage(nav_grid)
-        .manage(tracked_varps)
+        .manage(data_selection)
 }
 
 fn load_nav_grid(path: impl AsRef<Path>) -> Result<NavGrid, ciborium::de::Error<std::io::Error>> {
