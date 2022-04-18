@@ -1,7 +1,5 @@
 use std::collections::VecDeque;
 
-use serde::{Deserialize, Serialize};
-
 use model::{Coordinate, Edge, NavGrid};
 use model::constants::*;
 use model::definitions::{EdgeDefinition, GameState};
