@@ -6,6 +6,8 @@ use std::path::PathBuf;
 
 use clap::Parser;
 use expect_exit::{Expected, ExpectedWithError};
+use flate2::Compression;
+use flate2::write::GzEncoder;
 use rs3cache::cli::Config;
 use rs3cache::definitions::location_configs::LocationConfig;
 use rs3cache::definitions::mapsquares::MapSquares;
@@ -86,7 +88,8 @@ fn main() {
     println!("Exporting nav...");
     std::fs::create_dir_all(&options.output.parent().or_exit_("Invalid output path")).or_exit_e_("Error creating output directory");
     let nav_file = File::create(&options.output).or_exit_e_("Error creating output file");
-    let mut writer = BufWriter::new(nav_file);
+    let encoder = GzEncoder::new(nav_file, Compression::default());
+    let mut writer = BufWriter::new(encoder);
     for vertex in &nav_grid.vertices {
         let bytes = [vertex.flags, vertex.extra_edges_and_group];
         writer.write(&bytes).or_exit_e_("Error serializing vertices");

@@ -8,6 +8,7 @@ use std::time::Instant;
 
 use clap::Parser;
 use expect_exit::ExpectedWithError;
+use flate2::read::GzDecoder;
 use rocket::{Build, Rocket, State};
 use rocket::response::status::BadRequest;
 use rocket::serde::json::Json;
@@ -86,7 +87,8 @@ fn rocket() -> Rocket<Build> {
 
 fn load_nav_grid(path: impl AsRef<Path>) -> Result<NavGrid, ciborium::de::Error<std::io::Error>> {
     let file = File::open(path)?;
-    let mut reader = BufReader::new(file);
+    let decoder = GzDecoder::new(file);
+    let mut reader = BufReader::new(decoder);
     let mut nav_grid = NavGrid::new();
     for vertex in &mut nav_grid.vertices {
         let mut buf = [0; 2];
