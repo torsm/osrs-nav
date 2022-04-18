@@ -2,9 +2,9 @@
 Web API serving pathfinding requests
 
 ## Web API
-| Route     | Method | Description                                                              |
-|-----------|--------|--------------------------------------------------------------------------|
-| /path   | POST   | Path generation request                                                  |
+| Route    | Method | Description                                                              |
+|----------|--------|--------------------------------------------------------------------------|
+| /path    | POST   | Path generation request                                                  |
 | /select  | GET    | Returns selection of data points that should be transmitted as gamestate |
 | /metrics | GET    | Exposes prometheus metrics                                               |
 
@@ -16,7 +16,7 @@ Example body [(2771, 2794, 0)](https://explv.github.io/?centreX=2771&centreY=279
   "end": { "x": 3213, "y": 3427, "plane": 0 },
   "game_state": {
     "member": true,
-    "skill_levels": { "magic": 25 },
+    "skills": { "magic": 25 },
     "varps": {
       "273": 110
     },

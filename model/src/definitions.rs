@@ -10,7 +10,7 @@ pub struct GameState {
     #[serde(default)]
     pub member: bool,
     #[serde(default)]
-    pub skill_levels: HashMap<String, u8>,
+    pub skills: HashMap<String, u8>,
     #[serde(default)]
     pub items: HashMap<String, u32>,
     #[serde(default)]
@@ -59,7 +59,7 @@ impl RequirementDefinition {
     pub fn is_met(&self, game_state: &GameState) -> bool {
         match self {
             RequirementDefinition::Membership => game_state.member,
-            RequirementDefinition::Skill { skill, level } => game_state.skill_levels.get(skill).unwrap_or(&1) >= level,
+            RequirementDefinition::Skill { skill, level } => game_state.skills.get(skill).unwrap_or(&1) >= level,
             RequirementDefinition::Item { item, quantity } => {
                 let total: u32 = game_state.items.iter()
                     .filter(|(i, _)| item.is_match(i))
