@@ -6,3 +6,4 @@ OSRS navigation system suite
 - [generator](generator) - Generates a NavGrid from game cache
 - [pathfinder](pathfinder) - Graph traversal library for NavGrid
 - [webservice](webservice) - Web API serving pathfinding requests
+- [client-api](client-api) - API implementations for consumers of webservice
