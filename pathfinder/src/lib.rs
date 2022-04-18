@@ -7,12 +7,6 @@ use model::constants::*;
 use model::definitions::{EdgeDefinition, GameState};
 use model::util::RegionCache;
 
-#[derive(Debug, Deserialize, Serialize)]
-pub enum Step {
-    Edge(EdgeDefinition),
-    Step(Coordinate),
-}
-
 #[derive(Clone, Copy)]
 struct DijkstraCacheState<'a> {
     cost: u32,
@@ -69,7 +63,7 @@ impl<T: Clone> BucketRingBuffer<T> {
     }
 }
 
-pub fn dijkstra(nav_grid: &NavGrid, start: &Coordinate, end: &Coordinate, game_state: &GameState) -> (usize, usize, Option<Vec<Step>>) {
+pub fn dijkstra(nav_grid: &NavGrid, start: &Coordinate, end: &Coordinate, game_state: &GameState) -> (usize, usize, Option<Vec<EdgeDefinition>>) {
     let start_index = start.index();
     let end_index = end.index();
     let target_group = nav_grid.vertices[end_index as usize].get_group();
@@ -100,13 +94,13 @@ pub fn dijkstra(nav_grid: &NavGrid, start: &Coordinate, end: &Coordinate, game_s
         while let Some((cost, mut index)) = queue.buckets[current].pop() {
             count += 1;
             if index == end_index {
-                let mut path = Vec::new();
+                let mut path = vec![];
                 while index != start_index {
                     let state = cache.get_mut(index);
                     if let Some(edge) = state.edge {
-                        path.push(Step::Edge(edge.definition.clone()));
+                        path.push(edge.definition.clone());
                     } else {
-                        path.push(Step::Step(Coordinate::from_index(index)));
+                        path.push(EdgeDefinition::Step { position: Coordinate::from_index(index) });
                     }
                     index = state.prev;
                 }

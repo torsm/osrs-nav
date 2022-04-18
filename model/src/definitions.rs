@@ -22,6 +22,7 @@ pub struct GameState {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum EdgeDefinition {
+    Step { position: Coordinate },
     Door { id: u32, position: Coordinate, #[serde(with = "serde_regex")] action: Regex },
     GameObject { id: u32, position: Coordinate, #[serde(with = "serde_regex")] action: Regex },
     SpellTeleport { spell: String },
