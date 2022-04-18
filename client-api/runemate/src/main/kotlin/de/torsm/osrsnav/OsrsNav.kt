@@ -3,17 +3,27 @@ package de.torsm.osrsnav
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder
 import com.google.gson.TypeAdapter
+import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
 import com.google.gson.typeadapters.RuntimeTypeAdapterFactory
+import com.runemate.game.api.hybrid.entities.definitions.GameObjectDefinition
 import com.runemate.game.api.hybrid.local.Skill
 import com.runemate.game.api.hybrid.local.Varbits
 import com.runemate.game.api.hybrid.local.Varps
 import com.runemate.game.api.hybrid.local.hud.interfaces.Equipment
 import com.runemate.game.api.hybrid.local.hud.interfaces.Inventory
+import com.runemate.game.api.hybrid.local.hud.interfaces.SpriteItem
 import com.runemate.game.api.hybrid.location.Coordinate
+import com.runemate.game.api.hybrid.location.navigation.web.WebPath
+import com.runemate.game.api.hybrid.location.navigation.web.vertex_types.CoordinateVertex
+import com.runemate.game.api.hybrid.location.navigation.web.vertex_types.objects.BasicObjectVertex
+import com.runemate.game.api.hybrid.location.navigation.web.vertex_types.teleports.BasicItemTeleportVertex
+import com.runemate.game.api.hybrid.location.navigation.web.vertex_types.teleports.TeleportSpellVertex
 import com.runemate.game.api.hybrid.region.GameObjects
+import com.runemate.game.api.osrs.local.hud.interfaces.Magic
+import java.lang.reflect.Type
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -62,7 +72,7 @@ object OsrsNav {
             .uri(URI("$NAV_URL/path"))
             .POST(HttpRequest.BodyPublishers.ofString(json))
             .build()
-        return doHttpRequest(httpRequest)
+        return doHttpRequest(httpRequest, TypeToken.getParameterized(List::class.java, Edge::class.java).type)
     }
 
     fun buildBetween(start: Coordinate, end: Coordinate, gameState: GameState = GameState.fromGame()): List<Edge>? {
@@ -70,11 +80,11 @@ object OsrsNav {
         return doRequest(request)
     }
 
-    private inline fun <reified T> doHttpRequest(request: HttpRequest): T? = try {
+    private inline fun <reified T> doHttpRequest(request: HttpRequest, type: Type = T::class.java): T? = try {
         val httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream())
         if (httpResponse.statusCode() == 200) {
             httpResponse.body().bufferedReader().use { reader ->
-                gson.fromJson(reader, T::class.java)
+                gson.fromJson<T>(reader, type)
             }
         } else {
             println(httpResponse.body().bufferedReader().use { it.readText() })
@@ -154,7 +164,20 @@ data class GameState(
     }
 }
 
-interface Edge {
+fun convert(path: List<Edge>): WebPath {
+    val mapped = path.map {
+        when (it) {
+            is Door -> BasicObjectVertex(it.position, GameObjectDefinition.get(it.id)?.name, it.action, listOf())
+            is GameObjectEdge -> BasicObjectVertex(it.position, GameObjectDefinition.get(it.id)?.name, it.action, listOf())
+            is ItemTeleport -> BasicItemTeleportVertex(Coordinate(0), SpriteItem.Origin.INVENTORY, it.item, it.action, listOf())
+            is SpellTeleport -> TeleportSpellVertex(Magic.valueOf(it.spell.uppercase().replace(' ', '_')), Coordinate(0), listOf())
+            is Step -> CoordinateVertex(it.position, listOf())
+        }
+    }
+    return WebPath(mapped, path.size.toDouble())
+}
+
+sealed interface Edge {
     fun traverse(): Boolean
     fun trivial(): Boolean = false
 }
