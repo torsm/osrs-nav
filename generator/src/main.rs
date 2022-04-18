@@ -15,6 +15,7 @@ use serde::{Deserialize, Serialize};
 
 use generator::NavGenerator;
 use model::{Coordinate, Edge, NavGrid};
+use model::definitions::RequirementDefinition;
 use model::util::RegionCache;
 
 use crate::generator::GeneratorConfig;
@@ -84,6 +85,11 @@ fn main() {
         nav_grid.vertices[*index as usize].set_extra_edges(true);
     }
     create_groups(&mut nav_grid);
+    nav_grid.iter_edges_mut().flat_map(|e| e.requirements.iter_mut()).for_each(|r| {
+        if let RequirementDefinition::Skill { skill, .. } = r {
+            *skill = skill.to_uppercase();
+        }
+    });
 
     println!("Exporting nav...");
     std::fs::create_dir_all(&options.output.parent().or_exit_("Invalid output path")).or_exit_e_("Error creating output directory");

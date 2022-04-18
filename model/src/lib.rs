@@ -29,6 +29,10 @@ impl NavGrid {
     pub fn iter_edges(&self) -> impl Iterator<Item = &Edge> {
         self.edges.iter_all().flat_map(|(_, v)| v).chain(self.teleports.iter())
     }
+
+    pub fn iter_edges_mut(&mut self) -> impl Iterator<Item = &mut Edge> {
+        self.edges.iter_all_mut().flat_map(|(_, v)| v).chain(self.teleports.iter_mut())
+    }
 }
 
 #[derive(Default, Eq, PartialEq, Clone, Copy, Debug)]
