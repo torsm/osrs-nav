@@ -1,14 +1,14 @@
 # osrs-nav/webservice
 Web API serving pathfinding requests
 
-### Web API
+## Web API
 | Route     | Method | Description                                                              |
 |-----------|--------|--------------------------------------------------------------------------|
 | /path/    | POST   | Path generation request                                                  |
 | /select/  | GET    | Returns selection of data points that should be transmitted as gamestate |
 | /metrics/ | GET    | Exposes prometheus metrics                                               |
 
-#### /path/
+### /path/
 Example body [(2771, 2794, 0)](https://explv.github.io/?centreX=2771&centreY=2794&centreZ=0&zoom=10) -> [(3213, 3427, 0)](https://explv.github.io/?centreX=3213&centreY=3427&centreZ=0&zoom=10)
 ```json
 {
@@ -55,7 +55,7 @@ Example response
 
 If the response code is `200 OK`, the response can be parsed as a JSON Array of [Steps](../pathfinder/src/lib.rs). The array is `null` in case no path could be found.
 
-#### /select/
+### /select/
 
 For the sake of privacy and saving resources, this resource offers the exact data points needed for evaluating all edges during pathfinding.
 
@@ -63,7 +63,29 @@ For example only few varp values are needed like quest varps to evaluate individ
 
 The `game_state` variable transmitted in pathfinding requests and all of its fields or values are optional, but the closer all data points from `/select/` are included, the better the results.
 
-### Running
+Example response
+```json
+{
+    "varps": [
+        273
+    ],
+    "varbits": [],
+    "items": [
+        "Law rune",
+        "Fire rune",
+        "Varrock teleport",
+        "Air rune",
+        "Ring of dueling\\(\\d\\)",
+        "Coins"
+    ],
+    "skills": [
+        "agility",
+        "magic"
+    ]
+}
+```
+
+## Running
 
 ```
 USAGE:
