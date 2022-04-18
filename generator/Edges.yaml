@@ -57,7 +57,7 @@ edges:
     definition:
       type: GameObject
       id: 2883
-      position: { x: 3268, y: 3238, plane: 0 }
+      position: { x: 3268, y: 3228, plane: 0 }
       action: Pay-toll\(10gp\)
     requirements:
       - Varp: { index: 273, value: 110, compare: EQ }
@@ -70,7 +70,7 @@ edges:
     definition:
       type: GameObject
       id: 2883
-      position: { x: 3268, y: 3238, plane: 0 }
+      position: { x: 3268, y: 3228, plane: 0 }
       action: Pay-toll\(10gp\)
     requirements:
       - Item: { item: Coins, quantity: 10 }
