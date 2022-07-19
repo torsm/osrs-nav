@@ -1,7 +1,9 @@
 # osrs-nav/generator
+
 Generates a NavGrid from game cache
 
 ## Running
+
 ```
 USAGE:
     generator [OPTIONS] --cache <CACHE> --xteas <XTEAS> --output <OUTPUT>

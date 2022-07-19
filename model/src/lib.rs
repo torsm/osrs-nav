@@ -22,15 +22,15 @@ impl NavGrid {
         NavGrid {
             vertices: vec![Vertex::default(); (WIDTH * HEIGHT * PLANES) as usize],
             edges: MultiMap::new(),
-            teleports: Vec::new()
+            teleports: Vec::new(),
         }
     }
 
-    pub fn iter_edges(&self) -> impl Iterator<Item = &Edge> {
+    pub fn iter_edges(&self) -> impl Iterator<Item=&Edge> {
         self.edges.iter_all().flat_map(|(_, v)| v).chain(self.teleports.iter())
     }
 
-    pub fn iter_edges_mut(&mut self) -> impl Iterator<Item = &mut Edge> {
+    pub fn iter_edges_mut(&mut self) -> impl Iterator<Item=&mut Edge> {
         self.edges.iter_all_mut().flat_map(|(_, v)| v).chain(self.teleports.iter_mut())
     }
 }
@@ -97,7 +97,7 @@ impl Coordinate {
         Coordinate {
             x: i as u16 * REGION_SIZE as u16 + x as u16,
             y: j as u16 * REGION_SIZE as u16 + y as u16,
-            plane
+            plane,
         }
     }
 

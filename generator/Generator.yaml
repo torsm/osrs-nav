@@ -1,5 +1,5 @@
 ---
 excluded_location_ids: [
-  2623,       # Taverly dungeon blue dragon gate
-  2882, 2883, # Al-Kharid gates
+    2623,       # Taverly dungeon blue dragon gate
+    2882, 2883, # Al-Kharid gates
 ]

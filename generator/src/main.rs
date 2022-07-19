@@ -61,7 +61,7 @@ fn main() {
             output: PathBuf::new(),
             render: vec![],
             dump: vec![],
-            assert_coherence: false
+            assert_coherence: false,
         };
         let loc_configs = LocationConfig::dump_all(&cache_config).or_exit_e_("Error loading location definitions");
         let map_squares = MapSquares::new(&cache_config).or_exit_e_("Error loading map squares");
@@ -158,7 +158,7 @@ pub struct CustomEdge {
     #[serde(default)]
     pub bidirectional: bool,
     #[serde(flatten)]
-    pub edge: Edge
+    pub edge: Edge,
 }
 
 fn load_custom_edges(nav_grid: &mut NavGrid, file: File) -> serde_yaml::Result<()> {

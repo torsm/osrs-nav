@@ -31,7 +31,12 @@ pub enum EdgeDefinition {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Compare {
-    LT, LE, EQ, GE, GT, NOT
+    LT,
+    LE,
+    EQ,
+    GE,
+    GT,
+    NOT,
 }
 
 impl Compare {
@@ -67,7 +72,7 @@ impl RequirementDefinition {
                     .map(|(_, q)| q)
                     .sum();
                 total >= *quantity
-            },
+            }
             RequirementDefinition::Varp { index, value, compare } => game_state.varps.get(index).map(|val| compare.test(value, val)).unwrap_or(false),
             RequirementDefinition::Varbit { index, value, compare } => game_state.varbits.get(index).map(|val| compare.test(value, val)).unwrap_or(false),
         }

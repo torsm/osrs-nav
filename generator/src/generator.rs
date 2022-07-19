@@ -7,14 +7,14 @@ use rs3cache::definitions::mapsquares::MapSquare;
 use rs3cache::definitions::tiles::TileArray;
 use serde::Deserialize;
 
-use model::{Coordinate, Edge, NavGrid, };
+use model::{Coordinate, Edge, NavGrid};
 use model::constants::*;
 use model::definitions::{EdgeDefinition, Regex};
 use model::util::RegionCache;
 
 #[derive(Default, Deserialize)]
 pub struct GeneratorConfig {
-    excluded_location_ids: HashSet<u32>
+    excluded_location_ids: HashSet<u32>,
 }
 
 pub struct NavGenerator {
@@ -203,7 +203,7 @@ impl NavGenerator {
         let def = EdgeDefinition::Door {
             id,
             position: c.clone(),
-            action: Regex::new("^Open$").expect("Invalid regex")
+            action: Regex::new("^Open$").expect("Invalid regex"),
         };
         self.nav_grid.edges.insert(c.index(), Edge {
             destination: c2,

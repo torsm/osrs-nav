@@ -9,7 +9,7 @@ use model::util::RegionCache;
 struct DijkstraCacheState<'a> {
     cost: u32,
     prev: u32,
-    edge: Option<&'a Edge>
+    edge: Option<&'a Edge>,
 }
 
 pub struct BucketRingBuffer<T> {
@@ -21,7 +21,7 @@ impl<T: Clone> BucketRingBuffer<T> {
     pub fn new(max_cost: u32) -> BucketRingBuffer<T> {
         BucketRingBuffer {
             buckets: vec![Vec::new(); max_cost as usize + 1],
-            cursor: 0
+            cursor: 0,
         }
     }
 
