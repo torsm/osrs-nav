@@ -108,7 +108,7 @@ pub fn dijkstra(nav_grid: &NavGrid, start: &Coordinate, end: &Coordinate, game_s
             let v = &nav_grid.vertices[index as usize];
             for (flag, dx, dy) in &DIRECTIONS {
                 if (v.flags & flag) != 0 {
-                    let adj_index = index + (WIDTH * *dy as u32) + *dx as u32;
+                    let adj_index = (index as i32 + (WIDTH as i32 * *dy) + *dx) as u32;
                     let adj = cache.get_mut(adj_index);
                     if cost + 1 < adj.cost {
                         adj.cost = cost + 1;
@@ -150,7 +150,7 @@ pub fn flood<F>(nav_grid: &NavGrid, start: &Coordinate, mut visit_vertex: F) whe
         }
         for (flag, dx, dy) in &DIRECTIONS {
             if (v.flags & flag) != 0 {
-                let adj_index = index + (WIDTH * *dy as u32) + *dx as u32;
+                let adj_index = (index as i32 + (WIDTH as i32 * *dy) + *dx) as u32;
                 let visited = cache.get_mut(adj_index);
                 if !*visited {
                     queue.push_back(adj_index);
