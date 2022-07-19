@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 model = { path = "../model" }
 pathfinder = { path = "../pathfinder" }
-rs3cache = { git = "https://github.com/Torsm/rs3cache", rev = "dcc3557", features = ["osrs"] }
+rs3cache = { git = "https://github.com/Torsm/rs3cache", features = ["osrs"] }
 serde = { version = "1.0.136", features = ["derive"] }
 serde_yaml = "0.8.23"
 ciborium = "0.2.0"
