@@ -57,8 +57,8 @@ fn handle_path_request(request: Json<Request>, nav_grid: &State<NavGrid>) -> Res
 }
 
 #[get("/")]
-fn handle_select_request(tracked_varps: &State<DataSelection>) -> Json<DataSelection> {
-    Json(tracked_varps.inner().clone())
+fn handle_select_request(data_selection: &State<DataSelection>) -> Json<DataSelection> {
+    Json(data_selection.inner().clone())
 }
 
 #[launch]
