@@ -21,7 +21,7 @@ Example body [(2771, 2794, 0)](https://explv.github.io/?centreX=2771&centreY=279
   "end": { "x": 3213, "y": 3427, "plane": 0 },
   "game_state": {
     "member": true,
-    "skills": { "magic": 25 },
+    "skills": { "MAGIC": 25 },
     "varps": {
       "273": 110
     },
