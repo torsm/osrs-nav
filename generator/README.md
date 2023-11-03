@@ -5,16 +5,14 @@ Generates a NavGrid from game cache
 ## Running
 
 ```
-USAGE:
-    generator [OPTIONS] --cache <CACHE> --xteas <XTEAS> --output <OUTPUT>
-
-OPTIONS:
-    -c, --cache <CACHE>      Directory containing cache files
-        --config <CONFIG>    YAML file with generator configuration
-        --edges <EDGES>      YAML file with custom edges
-    -h, --help               Print help information
-    -o, --output <OUTPUT>    File that the generated NavGrid is serialized into
-    -x, --xteas <XTEAS>      JSON file containing XTEA keys for the selected cache
+Usage: generator.exe [OPTIONS] --input <INPUT> --output <OUTPUT>                                                    
+                                                                                                                    
+Options:                                                                                                            
+  -i, --input <INPUT>    Directory containing cache files and xteas
+  -o, --output <OUTPUT>  File that the generated NavGrid is serialized into
+      --edges <EDGES>    YAML file with custom edges
+      --config <CONFIG>  YAML file with generator configuration
+  -h, --help             Print help
 ```
 
 The cache directory is the directory containing files like `main_file_cache.dat2` and `main_file_cache.idx_`.

@@ -46,7 +46,7 @@ struct DataSelection {
 fn handle_path_request(request: Json<Request>, nav_grid: &State<NavGrid>) -> Result<Json<Option<Vec<EdgeDefinition>>>, BadRequest<&str>> {
     if !request.start.validate() || !request.end.validate() {
         println!("[Path] {} -> {} invalid coordinates", request.start, request.end);
-        Err(BadRequest(Some("Coordinate out of bounds")))
+        Err(BadRequest("Coordinate out of bounds"))
     } else {
         let begin = Instant::now();
         let (visited, mem_usage, path) = pathfinder::dijkstra(&nav_grid, &request.start, &request.end, &request.game_state);

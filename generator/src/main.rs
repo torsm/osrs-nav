@@ -3,6 +3,7 @@ extern crate core;
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Write};
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use clap::Parser;
 use expect_exit::{Expected, ExpectedWithError};
@@ -11,6 +12,7 @@ use flate2::write::GzEncoder;
 use rs3cache::cli::Config;
 use rs3cache::definitions::location_configs::LocationConfig;
 use rs3cache::definitions::mapsquares::MapSquares;
+use rs3cache_backend::path::CachePath;
 use serde::{Deserialize, Serialize};
 
 use generator::NavGenerator;
@@ -24,12 +26,9 @@ mod generator;
 
 #[derive(Parser)]
 struct Options {
-    /// Directory containing cache files
+    /// Directory containing cache files and xteas
     #[clap(short, long)]
-    cache: PathBuf,
-    /// JSON file containing XTEA keys for the selected cache
-    #[clap(short, long)]
-    xteas: PathBuf,
+    input: PathBuf,
     /// File that the generated NavGrid is serialized into
     #[clap(short, long)]
     output: PathBuf,
@@ -56,8 +55,7 @@ fn main() {
         println!("Processing cache...");
         let mut generator = NavGenerator::new(config);
         let cache_config = Config {
-            input: options.cache,
-            xteas: options.xteas,
+            input: CachePath::Argument(Arc::from(options.input)),
             output: PathBuf::new(),
             render: vec![],
             dump: vec![],

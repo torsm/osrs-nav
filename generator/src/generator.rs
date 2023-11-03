@@ -5,6 +5,7 @@ use rs3cache::definitions::location_configs::LocationConfig;
 use rs3cache::definitions::locations::Location;
 use rs3cache::definitions::mapsquares::MapSquare;
 use rs3cache::definitions::tiles::TileArray;
+use rs3cache_backend::buf::JString;
 use serde::Deserialize;
 
 use model::{Coordinate, Edge, NavGrid};
@@ -35,9 +36,9 @@ impl NavGenerator {
 
 impl NavGenerator {
     pub fn process_map_square(&mut self, map_square: &MapSquare, loc_configs: &BTreeMap<u32, LocationConfig>) {
-        if let Ok(tiles) = map_square.get_tiles() {
+        if let Some(tiles) = map_square.tiles() {
             self.process_tiles(&map_square, tiles);
-            if let Ok(locations) = map_square.get_locations() {
+            if let Some(locations) = map_square.locations() {
                 self.process_locations(locations, loc_configs, tiles);
             }
         }
@@ -58,7 +59,7 @@ impl NavGenerator {
         }
     }
 
-    fn process_locations(&mut self, locations: &Vec<Location>, configs: &BTreeMap<u32, LocationConfig>, tiles: &TileArray) {
+    fn process_locations(&mut self, locations: &[Location], configs: &BTreeMap<u32, LocationConfig>, tiles: &TileArray) {
         for loc in locations {
             let config = configs.get(&loc.id).or_exit(|| format!("Missing LocationConfig {}", loc.id));
             let mut c = Coordinate::from_map_square(loc.i, loc.j, loc.x, loc.y, loc.plane.inner());
@@ -93,7 +94,7 @@ impl NavGenerator {
         }
         if let 0..=3 = loc.r#type {
             if let (Some(name), Some(actions)) = (&config.name, &config.actions) {
-                if (name == "Door" || name == "Gate" || name == "Large door") && actions.contains(&Some("Open".to_string())) {
+                if (name == "Door" || name == "Gate" || name == "Large door") && actions.contains(&Some(JString::from("Open".to_string()))) {
                     self.add_door(adjusted_c, loc.id, loc.rotation);
                 }
             }

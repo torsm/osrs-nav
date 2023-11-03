@@ -7,9 +7,10 @@ edition = "2021"
 model = { path = "../model" }
 pathfinder = { path = "../pathfinder" }
 rs3cache = { git = "https://github.com/Torsm/rs3cache", features = ["osrs"] }
+rs3cache_backend = { git = "https://github.com/Torsm/rs3cache" }
 serde = { version = "1.0.136", features = ["derive"] }
 serde_yaml = "0.8.23"
 ciborium = "0.2.0"
 expect-exit = "0.4.1"
-clap = { version = "3.1.6", features = ["derive"] }
+clap = { version = "4.1.8", features = ["derive"] }
 flate2 = "1.0.23"
