@@ -6,10 +6,10 @@ edition = "2021"
 [dependencies]
 model = { path = "../model" }
 pathfinder = { path = "../pathfinder" }
-serde = { version = "1.0.136", features = ["derive"] }
-ciborium = "0.2.0"
-expect-exit = "0.4.1"
-clap = { version = "3.1.6", features = ["derive"] }
-rocket = { version = "0.5.0-rc.1", features = ["json"] }
-rocket_prometheus = "0.10.0-rc.1"
-flate2 = "1.0.23"
+serde = { version = "1.0.190", features = ["derive"] }
+ciborium = "0.2.1"
+expect-exit = "0.5.2"
+clap = { version = "4.1.8", features = ["derive"] }
+rocket = { version = "0.5.0-rc.4", features = ["json"] }
+rocket_prometheus = "0.10.0-rc.3"
+flate2 = "1.0.28"
